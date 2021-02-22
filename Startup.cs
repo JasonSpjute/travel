@@ -11,6 +11,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using travel.Services;
+using travel.Repositories;
+using System.Data;
+using MySqlConnector;
 
 namespace travel
 {
@@ -27,12 +31,27 @@ namespace travel
         public void ConfigureServices(IServiceCollection services)
         {
 
+            services.AddTransient<VacationsService>();
+            services.AddTransient<TripsService>();
+            services.AddTransient<CruisesService>();
+            services.AddTransient<VacationsRepository>();
+            services.AddTransient<CruisesRepository>();
+            services.AddTransient<TripsRepository>();
+
+            services.AddScoped<IDbConnection>(x => CreateDbConnection());
+
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "travel", Version = "v1" });
             });
         }
+        private IDbConnection CreateDbConnection()
+        {
+            string connectString = Configuration["db:gearhost"];
+            return new MySqlConnection(connectString);
+        }
+
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
